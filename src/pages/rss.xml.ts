@@ -14,7 +14,7 @@ export async function GET(context: APIContext) {
       title: post.data.title,
       pubDate: post.data.date_saved,
       description: post.data.description ?? `Saved from ${post.data.source_site} by ${post.data.original_author}`,
-      link: `/posts/${post.id}/`,
+      link: `/posts/${post.id.replace(/\.[^.]+$/, '')}/`,
       customData: `<author>${post.data.original_author}</author>`,
     })),
   });

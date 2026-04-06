@@ -12,12 +12,15 @@ import path from 'node:path';
 export async function getStaticPaths() {
   const posts = await getCollection('posts', ({ data }) => !data.draft);
   return posts.map((post) => ({
-    params: { slug: post.id },
+    params: { slug: post.id.replace(/\.[^.]+$/, '') },
     props: { post },
   }));
 }
 
 const { post } = Astro.props;
+// Slug without extension — used for the snapshot path
+const postSlug = post.id.replace(/\.[^.]+$/, '');
+
 const {
   title,
   description,
@@ -30,9 +33,9 @@ const {
 } = post.data;
 
 // Check if a monolith snapshot exists for this post
-const snapshotPath = path.join(process.cwd(), 'public', 'saved', `${post.id}.html`);
+const snapshotPath = path.join(process.cwd(), 'public', 'saved', `${postSlug}.html`);
 const hasSnapshot = fs.existsSync(snapshotPath);
-const iframeSrc = `/saved/${post.id}.html`;
+const iframeSrc = `/saved/${postSlug}.html`;
 ---
 
 <Base title={title} description={description} canonicalUrl={source_url}>

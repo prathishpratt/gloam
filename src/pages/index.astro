@@ -3,7 +3,7 @@ import PageLayout from '../layouts/PageLayout.astro';
 import PostCard from '../components/PostCard.astro';
 import TagBadge from '../components/TagBadge.astro';
 import SourceBadge from '../components/SourceBadge.astro';
-import { getAllPosts, getFeaturedPosts } from '../utils/posts';
+import { getAllPosts, getFeaturedPosts, getPostSlug } from '../utils/posts';
 import { getAllTags } from '../utils/tags';
 
 const allPosts = await getAllPosts();
@@ -48,12 +48,12 @@ const topTags = allTags.slice(0, 10);
       <div class="featured-scroll">
         {featuredPosts.map((post) => (
           <article class="featured-card">
-            <a href={`/posts/${post.slug}`} class="featured-card-link" tabindex="-1" aria-hidden="true"></a>
+            <a href={`/posts/${getPostSlug(post)}`} class="featured-card-link" tabindex="-1" aria-hidden="true"></a>
             <div class="featured-card-top">
               <SourceBadge source_site={post.data.source_site} link={false} />
             </div>
             <h3 class="featured-card-title">
-              <a href={`/posts/${post.slug}`} class="featured-card-title-link">
+              <a href={`/posts/${getPostSlug(post)}`} class="featured-card-title-link">
                 {post.data.title}
               </a>
             </h3>

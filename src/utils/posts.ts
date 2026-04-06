@@ -26,6 +26,11 @@ export async function getPostsBySource(source: string): Promise<Post[]> {
   return posts.filter((p) => p.data.source_site === source);
 }
 
+/** Returns the URL-safe slug for a post (strips file extension from id). */
+export function getPostSlug(post: Post): string {
+  return post.id.replace(/\.[^.]+$/, '');
+}
+
 export function formatDate(date: Date): string {
   return date.toLocaleDateString('en-US', {
     day: '2-digit',
