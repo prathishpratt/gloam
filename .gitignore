@@ -1,0 +1,30 @@
+# Build output
+dist/
+.astro/
+
+# Dependencies
+node_modules/
+
+# Environment
+.env
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+npm-debug.log*
+
+# Python
+cloner/__pycache__/
+cloner/*.egg-info/
+cloner/.venv/
+cloner/venv/
+*.pyc
+node_modules

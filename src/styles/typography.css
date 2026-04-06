@@ -1,0 +1,198 @@
+/* ============================================================
+   Gloam — Prose Typography
+   Applied inside .prose wrapper on post pages
+   ============================================================ */
+
+.prose {
+  max-width: var(--max-width-prose);
+  font-size: var(--font-size-lg);
+  line-height: var(--line-height-loose);
+  color: var(--color-text);
+}
+
+/* ── Headings ── */
+.prose h1,
+.prose h2,
+.prose h3,
+.prose h4,
+.prose h5,
+.prose h6 {
+  font-family: var(--font-sans);
+  font-weight: 700;
+  line-height: var(--line-height-tight);
+  color: var(--color-text);
+  margin-top: var(--space-10);
+  margin-bottom: var(--space-4);
+  scroll-margin-top: calc(var(--nav-height) + var(--space-4));
+}
+
+.prose h1 { font-size: var(--font-size-4xl); margin-top: 0; }
+.prose h2 { font-size: var(--font-size-2xl); padding-bottom: var(--space-2); border-bottom: 1px solid var(--color-border); }
+.prose h3 { font-size: var(--font-size-xl); }
+.prose h4 { font-size: var(--font-size-lg); }
+.prose h5, .prose h6 { font-size: var(--font-size-base); }
+
+/* ── Paragraphs ── */
+.prose p {
+  margin-bottom: var(--space-6);
+}
+
+.prose p:last-child {
+  margin-bottom: 0;
+}
+
+/* ── Links ── */
+.prose a {
+  color: var(--color-link);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1px;
+}
+
+.prose a:hover {
+  color: var(--color-link-hover);
+  text-decoration-thickness: 2px;
+}
+
+/* ── Lists ── */
+.prose ul,
+.prose ol {
+  padding-left: var(--space-6);
+  margin-bottom: var(--space-6);
+}
+
+.prose ul { list-style-type: disc; }
+.prose ol { list-style-type: decimal; }
+
+.prose li {
+  margin-bottom: var(--space-2);
+}
+
+.prose li > ul,
+.prose li > ol {
+  margin-top: var(--space-2);
+  margin-bottom: 0;
+}
+
+/* ── Blockquote ── */
+.prose blockquote {
+  border-left: 3px solid var(--color-accent);
+  padding-left: var(--space-6);
+  margin-left: 0;
+  margin-right: 0;
+  margin-bottom: var(--space-6);
+  color: var(--color-text-muted);
+  font-style: italic;
+}
+
+.prose blockquote p {
+  margin-bottom: 0;
+}
+
+/* ── Code ── */
+.prose code {
+  font-family: var(--font-mono);
+  font-size: 0.875em;
+  background-color: var(--color-bg-elevated);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 0.125em 0.375em;
+  color: var(--color-text);
+}
+
+/* Code inside a pre block (Shiki) */
+.prose pre {
+  margin-bottom: var(--space-6);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  overflow-x: auto;
+  padding: var(--space-4) var(--space-5);
+}
+
+.prose pre code {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: var(--font-size-sm);
+  line-height: 1.6;
+}
+
+/* ── Images ── */
+.prose img {
+  margin: var(--space-8) auto;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  max-width: 100%;
+}
+
+.prose figure {
+  margin: var(--space-8) 0;
+}
+
+.prose figcaption {
+  text-align: center;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+  margin-top: var(--space-2);
+  font-style: italic;
+}
+
+/* ── Tables ── */
+.prose table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: var(--space-6);
+  font-size: var(--font-size-sm);
+  overflow-x: auto;
+  display: block;
+}
+
+.prose thead {
+  background-color: var(--color-bg-elevated);
+}
+
+.prose th,
+.prose td {
+  padding: var(--space-2) var(--space-4);
+  border: 1px solid var(--color-border);
+  text-align: left;
+}
+
+.prose th {
+  font-weight: 600;
+}
+
+.prose tr:nth-child(even) {
+  background-color: var(--color-bg-elevated);
+}
+
+/* ── Horizontal rule ── */
+.prose hr {
+  border: none;
+  border-top: 1px solid var(--color-border);
+  margin: var(--space-10) 0;
+}
+
+/* ── Strong / Em ── */
+.prose strong {
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.prose em {
+  font-style: italic;
+}
+
+/* ── Footnotes ── */
+.prose .footnotes {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+  border-top: 1px solid var(--color-border);
+  margin-top: var(--space-10);
+  padding-top: var(--space-6);
+}
+
+/* ── Math (KaTeX/MathJax if used) ── */
+.prose .math {
+  overflow-x: auto;
+}

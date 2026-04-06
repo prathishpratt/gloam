@@ -1,0 +1,199 @@
+---
+import PageLayout from '../layouts/PageLayout.astro';
+---
+
+<PageLayout title="About Gloam" description="What Gloam is and how it works — a personal reading archive of the best writing from across the web.">
+
+  <div class="about-container">
+
+    <header class="about-header">
+      <h1 class="about-title">About Gloam</h1>
+    </header>
+
+    <section class="about-section">
+      <p class="about-lead">
+        Gloam is a personal reading archive. It's where I collect and keep the best blog posts, essays, and articles I come across on the web — writing that taught me something, changed how I think, or that I simply want to be able to find again.
+      </p>
+      <p>
+        Rather than bookmarks that disappear or reading lists that go unread, Gloam is a curated, browsable collection. Every post is saved in full, tagged, and linked back to its original source. The author and source site are always credited prominently.
+      </p>
+      <p>
+        The name "Gloam" comes from the poetic word for twilight — that quiet time when you settle in to read.
+      </p>
+    </section>
+
+    <section class="about-section">
+      <h2 class="about-section-title">How it works</h2>
+      <p>
+        The workflow has three steps:
+      </p>
+      <ol class="about-steps">
+        <li>
+          <strong>Clone</strong> — A Python script fetches the original post from the web, strips ads and navigation, and extracts the clean article content along with metadata (title, author, date, tags).
+        </li>
+        <li>
+          <strong>Convert</strong> — The cloned content is converted into an MDX file with a structured frontmatter block: <code>title</code>, <code>description</code>, <code>source_url</code>, <code>source_site</code>, <code>original_author</code>, <code>date_saved</code>, and <code>tags</code>.
+        </li>
+        <li>
+          <strong>Publish</strong> — The MDX file is dropped into the Astro content collection and the site rebuilds. The post appears in the collection automatically, correctly tagged and linked.
+        </li>
+      </ol>
+      <p>
+        The site itself is built with <a href="https://astro.build" target="_blank" rel="noopener noreferrer">Astro</a> and deployed on Vercel. All styling is hand-written CSS with a teal-accented design system.
+      </p>
+    </section>
+
+    <section class="about-section">
+      <h2 class="about-section-title">Sources</h2>
+      <p>
+        Posts come from a range of writing platforms and personal sites. The most common sources include:
+      </p>
+      <ul class="about-sources">
+        <li><strong>Substack</strong> — Long-form newsletters and essays from independent writers</li>
+        <li><strong>Medium</strong> — Technical and personal writing from practitioners</li>
+        <li><strong>Personal Blogs</strong> — Independent writers hosting their own sites</li>
+        <li><strong>WordPress</strong> — Established blogs and publications on the WordPress platform</li>
+        <li><strong>Course Pages</strong> — Educational content from course sites and tutorials</li>
+      </ul>
+      <p>
+        Every post links back to the original. If you're the author of a post saved here and would like it removed, please reach out.
+      </p>
+    </section>
+
+  </div>
+
+</PageLayout>
+
+<style>
+  .about-container {
+    max-width: var(--max-width-prose);
+    margin: 0 auto;
+  }
+
+  .about-header {
+    margin-bottom: var(--space-12);
+    padding-bottom: var(--space-8);
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .about-title {
+    font-size: clamp(var(--font-size-3xl), 6vw, var(--font-size-4xl));
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: var(--color-text);
+  }
+
+  .about-section {
+    margin-bottom: var(--space-16);
+  }
+
+  .about-section-title {
+    font-size: var(--font-size-2xl);
+    font-weight: 700;
+    color: var(--color-text);
+    margin-bottom: var(--space-6);
+  }
+
+  .about-lead {
+    font-size: var(--font-size-lg);
+    line-height: var(--line-height-loose);
+    color: var(--color-text);
+    margin-bottom: var(--space-6);
+  }
+
+  .about-container p {
+    font-size: var(--font-size-base);
+    line-height: var(--line-height-loose);
+    color: var(--color-text-muted);
+    margin-bottom: var(--space-5);
+  }
+
+  .about-container a {
+    color: var(--color-accent);
+    text-underline-offset: 3px;
+  }
+
+  .about-container a:hover {
+    color: var(--color-accent-hover);
+  }
+
+  .about-container code {
+    font-family: var(--font-mono);
+    font-size: 0.875em;
+    background-color: var(--color-bg-elevated);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    padding: 0.15em 0.4em;
+    color: var(--color-text);
+  }
+
+  .about-steps {
+    list-style: none;
+    counter-reset: steps;
+    padding: 0;
+    margin: var(--space-6) 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-5);
+  }
+
+  .about-steps li {
+    counter-increment: steps;
+    display: flex;
+    gap: var(--space-4);
+    align-items: flex-start;
+    font-size: var(--font-size-base);
+    line-height: var(--line-height-normal);
+    color: var(--color-text-muted);
+  }
+
+  .about-steps li::before {
+    content: counter(steps);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 1.75rem;
+    height: 1.75rem;
+    background-color: color-mix(in srgb, var(--color-accent) 12%, transparent);
+    color: var(--color-accent);
+    border-radius: var(--radius-full);
+    font-size: var(--font-size-sm);
+    font-weight: 700;
+    margin-top: 0.1em;
+  }
+
+  .about-steps strong {
+    color: var(--color-text);
+  }
+
+  .about-sources {
+    list-style: none;
+    padding: 0;
+    margin: var(--space-6) 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+  }
+
+  .about-sources li {
+    font-size: var(--font-size-base);
+    line-height: var(--line-height-normal);
+    color: var(--color-text-muted);
+    padding-left: var(--space-5);
+    position: relative;
+  }
+
+  .about-sources li::before {
+    content: '·';
+    position: absolute;
+    left: 0;
+    color: var(--color-accent);
+    font-size: var(--font-size-lg);
+    line-height: 1.3;
+  }
+
+  .about-sources strong {
+    color: var(--color-text);
+  }
+</style>

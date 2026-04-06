@@ -1,0 +1,134 @@
+---
+import PageLayout from '../../layouts/PageLayout.astro';
+import { getAllTags, slugifyTag } from '../../utils/tags';
+
+const allTags = await getAllTags();
+
+// Compute font-size bounds for tag cloud
+const minCount = allTags.length > 0 ? Math.min(...allTags.map((t) => t.count)) : 1;
+const maxCount = allTags.length > 0 ? Math.max(...allTags.map((t) => t.count)) : 1;
+
+function tagFontSize(count: number): string {
+  // Scale between 0.75rem and 1.75rem based on count
+  const minSize = 0.8;
+  const maxSize = 1.75;
+  if (maxCount === minCount) return `${(minSize + maxSize) / 2}rem`;
+  const ratio = (count - minCount) / (maxCount - minCount);
+  const size = minSize + ratio * (maxSize - minSize);
+  return `${size.toFixed(3)}rem`;
+}
+---
+
+<PageLayout title="Tags — Gloam" description="Browse all tags in the Gloam reading archive.">
+
+  <header class="tags-header">
+    <h1 class="tags-title">Tags</h1>
+    <p class="tags-subtitle">{allTags.length} {allTags.length === 1 ? 'tag' : 'tags'} across the collection</p>
+  </header>
+
+  {allTags.length > 0 ? (
+    <div class="tag-cloud" role="list" aria-label="All tags">
+      {allTags.map(({ tag, count }) => (
+        <a
+          href={`/tags/${slugifyTag(tag)}`}
+          class="tag-cloud-item"
+          role="listitem"
+          style={`font-size: ${tagFontSize(count)};`}
+          title={`${count} ${count === 1 ? 'post' : 'posts'}`}
+        >
+          {tag}
+          <span class="tag-cloud-count">{count}</span>
+        </a>
+      ))}
+    </div>
+  ) : (
+    <p class="tags-empty">No tags yet. Check back after some posts are added.</p>
+  )}
+
+</PageLayout>
+
+<style>
+  .tags-header {
+    margin-bottom: var(--space-12);
+  }
+
+  .tags-title {
+    font-size: clamp(var(--font-size-3xl), 6vw, var(--font-size-4xl));
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: var(--color-text);
+    margin-bottom: var(--space-2);
+  }
+
+  .tags-subtitle {
+    font-size: var(--font-size-base);
+    color: var(--color-text-faint);
+  }
+
+  .tag-cloud {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+    align-items: center;
+    line-height: 1;
+  }
+
+  .tag-cloud-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35em;
+    background-color: var(--color-bg-elevated);
+    color: var(--color-text-muted);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-full);
+    padding: 0.35em 0.8em;
+    font-weight: 500;
+    text-decoration: none;
+    transition:
+      background-color var(--transition-fast),
+      color var(--transition-fast),
+      border-color var(--transition-fast),
+      transform var(--transition-fast);
+    line-height: 1.4;
+  }
+
+  .tag-cloud-item:hover {
+    background-color: color-mix(in srgb, var(--color-accent) 12%, transparent);
+    color: var(--color-accent);
+    border-color: color-mix(in srgb, var(--color-accent) 35%, transparent);
+    text-decoration: none;
+    transform: translateY(-1px);
+  }
+
+  .tag-cloud-item:visited {
+    color: var(--color-text-muted);
+  }
+
+  .tag-cloud-item:visited:hover {
+    color: var(--color-accent);
+  }
+
+  .tag-cloud-count {
+    display: inline-block;
+    background-color: var(--color-bg-subtle);
+    color: var(--color-text-faint);
+    border-radius: var(--radius-full);
+    font-size: 0.7em;
+    font-weight: 600;
+    padding: 0.1em 0.5em;
+    min-width: 1.5em;
+    text-align: center;
+    line-height: 1.6;
+  }
+
+  .tag-cloud-item:hover .tag-cloud-count {
+    background-color: color-mix(in srgb, var(--color-accent) 15%, transparent);
+    color: var(--color-accent);
+  }
+
+  .tags-empty {
+    font-size: var(--font-size-base);
+    color: var(--color-text-faint);
+    padding: var(--space-12) 0;
+  }
+</style>

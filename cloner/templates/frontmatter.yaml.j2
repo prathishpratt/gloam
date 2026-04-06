@@ -1,0 +1,13 @@
+---
+title: {{ title | replace('"', '\\"') | tojson }}
+{% if description %}description: {{ description | tojson }}
+{% endif %}source_url: "{{ source_url }}"
+source_site: "{{ source_site }}"
+original_author: "{{ original_author }}"
+date_saved: "{{ date_saved }}"
+{% if date_published %}date_published: "{{ date_published }}"
+{% endif %}tags: [{% for tag in tags %}"{{ tag }}"{% if not loop.last %}, {% endif %}{% endfor %}]
+{% if cover_image %}cover_image: "{{ cover_image }}"
+{% endif %}featured: false
+draft: {{ "true" if draft else "false" }}
+---

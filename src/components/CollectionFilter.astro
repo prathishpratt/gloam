@@ -1,0 +1,377 @@
+---
+import type { TagCount } from '../utils/tags';
+import type { Post } from '../utils/posts';
+import PostCard from './PostCard.astro';
+
+interface Props {
+  tags: TagCount[];
+  sources: string[];
+  posts: Post[];
+}
+
+const { tags, sources, posts } = Astro.props;
+---
+
+<div class="filter-root">
+  <!-- Filter controls -->
+  <div class="filter-bar" id="filter-bar">
+    <!-- Tag filter -->
+    {tags.length > 0 && (
+      <div class="filter-group">
+        <span class="filter-label">Tags</span>
+        <div class="filter-pills" role="group" aria-label="Filter by tag">
+          {tags.map(({ tag, count }) => (
+            <button
+              class="filter-pill"
+              data-filter-type="tag"
+              data-filter-value={tag}
+              aria-pressed="false"
+            >
+              {tag}
+              <span class="filter-count">{count}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+    )}
+
+    <!-- Source filter -->
+    {sources.length > 0 && (
+      <div class="filter-group">
+        <span class="filter-label">Source</span>
+        <div class="filter-pills" role="group" aria-label="Filter by source">
+          {sources.map((source) => (
+            <button
+              class="filter-pill"
+              data-filter-type="source"
+              data-filter-value={source}
+              aria-pressed="false"
+            >
+              {source}
+            </button>
+          ))}
+        </div>
+      </div>
+    )}
+
+    <!-- Clear button (hidden by default) -->
+    <button class="filter-clear" id="filter-clear" hidden aria-label="Clear all filters">
+      Clear filters
+      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <line x1="18" y1="6" x2="6" y2="18"/>
+        <line x1="6" y1="6" x2="18" y2="18"/>
+      </svg>
+    </button>
+  </div>
+
+  <!-- Results count -->
+  <p class="filter-results" id="filter-results" aria-live="polite" aria-atomic="true">
+    {posts.length} posts
+  </p>
+
+  <!-- Post grid -->
+  <div class="posts-grid" id="posts-grid">
+    {posts.map((post) => (
+      <div
+        class="posts-grid-item"
+        data-tags={post.data.tags.join(',')}
+        data-source={post.data.source_site}
+      >
+        <PostCard post={post} />
+      </div>
+    ))}
+  </div>
+
+  <!-- No results message -->
+  <p class="filter-empty" id="filter-empty" hidden>
+    No posts match the current filters. <button class="filter-empty-reset" id="filter-empty-reset">Clear filters</button>
+  </p>
+</div>
+
+<script>
+  interface FilterState {
+    tags: Set<string>;
+    sources: Set<string>;
+  }
+
+  const state: FilterState = { tags: new Set(), sources: new Set() };
+
+  const grid = document.getElementById('posts-grid');
+  const clearBtn = document.getElementById('filter-clear');
+  const resultsEl = document.getElementById('filter-results');
+  const emptyEl = document.getElementById('filter-empty');
+  const emptyResetBtn = document.getElementById('filter-empty-reset');
+
+  function applyFilters() {
+    if (!grid) return;
+
+    const items = grid.querySelectorAll<HTMLElement>('.posts-grid-item');
+    let visible = 0;
+
+    items.forEach((item) => {
+      const itemTags = (item.dataset.tags || '')
+        .split(',')
+        .map((t) => t.trim())
+        .filter(Boolean);
+      const itemSource = item.dataset.source || '';
+
+      const tagMatch =
+        state.tags.size === 0 ||
+        [...state.tags].some((t) => itemTags.includes(t));
+
+      const sourceMatch =
+        state.sources.size === 0 || state.sources.has(itemSource);
+
+      const show = tagMatch && sourceMatch;
+      item.style.display = show ? '' : 'none';
+      if (show) visible++;
+    });
+
+    // Update results count
+    if (resultsEl) {
+      const total = items.length;
+      const isFiltered = state.tags.size > 0 || state.sources.size > 0;
+      resultsEl.textContent = isFiltered
+        ? `${visible} of ${total} posts`
+        : `${total} posts`;
+    }
+
+    // Show/hide empty state
+    if (emptyEl) {
+      emptyEl.hidden = visible > 0;
+    }
+
+    // Show/hide clear button
+    const hasFilter = state.tags.size > 0 || state.sources.size > 0;
+    if (clearBtn) clearBtn.hidden = !hasFilter;
+  }
+
+  function clearFilters() {
+    state.tags.clear();
+    state.sources.clear();
+
+    document.querySelectorAll<HTMLButtonElement>('.filter-pill').forEach((btn) => {
+      btn.classList.remove('filter-pill--active');
+      btn.setAttribute('aria-pressed', 'false');
+    });
+
+    applyFilters();
+  }
+
+  // Pill click handler
+  document.querySelectorAll<HTMLButtonElement>('.filter-pill').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const type = btn.dataset.filterType as 'tag' | 'source';
+      const value = btn.dataset.filterValue || '';
+
+      const isActive = btn.classList.contains('filter-pill--active');
+
+      if (isActive) {
+        btn.classList.remove('filter-pill--active');
+        btn.setAttribute('aria-pressed', 'false');
+        if (type === 'tag') state.tags.delete(value);
+        else state.sources.delete(value);
+      } else {
+        btn.classList.add('filter-pill--active');
+        btn.setAttribute('aria-pressed', 'true');
+        if (type === 'tag') state.tags.add(value);
+        else state.sources.add(value);
+      }
+
+      applyFilters();
+    });
+  });
+
+  clearBtn?.addEventListener('click', clearFilters);
+  emptyResetBtn?.addEventListener('click', clearFilters);
+
+  // Handle ?source= and ?tag= URL params on load
+  const params = new URLSearchParams(window.location.search);
+  const sourceParam = params.get('source');
+  const tagParam = params.get('tag');
+
+  if (sourceParam) {
+    const pill = document.querySelector<HTMLButtonElement>(
+      `.filter-pill[data-filter-type="source"][data-filter-value="${CSS.escape(sourceParam)}"]`
+    );
+    if (pill) {
+      pill.classList.add('filter-pill--active');
+      pill.setAttribute('aria-pressed', 'true');
+      state.sources.add(sourceParam);
+      applyFilters();
+    }
+  }
+
+  if (tagParam) {
+    const pill = document.querySelector<HTMLButtonElement>(
+      `.filter-pill[data-filter-type="tag"][data-filter-value="${CSS.escape(tagParam)}"]`
+    );
+    if (pill) {
+      pill.classList.add('filter-pill--active');
+      pill.setAttribute('aria-pressed', 'true');
+      state.tags.add(tagParam);
+      applyFilters();
+    }
+  }
+</script>
+
+<style>
+  .filter-root {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-6);
+  }
+
+  .filter-bar {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    padding: var(--space-5);
+    background-color: var(--color-bg-elevated);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+  }
+
+  .filter-group {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-3);
+  }
+
+  .filter-label {
+    font-size: var(--font-size-xs);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--color-text-faint);
+    flex-shrink: 0;
+    min-width: 3.5rem;
+  }
+
+  .filter-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
+
+  .filter-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+    padding: 0.3em 0.75em;
+    background-color: var(--color-bg-subtle);
+    color: var(--color-text-muted);
+    border: 1px solid transparent;
+    border-radius: var(--radius-full);
+    font-size: var(--font-size-xs);
+    font-weight: 500;
+    cursor: pointer;
+    transition:
+      background-color var(--transition-fast),
+      color var(--transition-fast),
+      border-color var(--transition-fast);
+    font-family: var(--font-sans);
+    line-height: 1.5;
+  }
+
+  .filter-pill:hover {
+    background-color: color-mix(in srgb, var(--color-accent) 12%, var(--color-bg-subtle));
+    color: var(--color-text);
+  }
+
+  .filter-pill--active {
+    background-color: color-mix(in srgb, var(--color-accent) 15%, transparent);
+    color: var(--color-accent);
+    border-color: color-mix(in srgb, var(--color-accent) 40%, transparent);
+  }
+
+  .filter-pill--active:hover {
+    background-color: color-mix(in srgb, var(--color-accent) 20%, transparent);
+  }
+
+  .filter-count {
+    display: inline-block;
+    background-color: var(--color-bg);
+    color: var(--color-text-faint);
+    border-radius: var(--radius-full);
+    padding: 0 0.4em;
+    font-size: 0.85em;
+    line-height: 1.5;
+    min-width: 1.4em;
+    text-align: center;
+  }
+
+  .filter-pill--active .filter-count {
+    background-color: color-mix(in srgb, var(--color-accent) 20%, var(--color-bg));
+    color: var(--color-accent);
+  }
+
+  .filter-clear {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-2) var(--space-4);
+    background: none;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-full);
+    font-size: var(--font-size-xs);
+    font-weight: 500;
+    color: var(--color-text-muted);
+    cursor: pointer;
+    font-family: var(--font-sans);
+    transition: border-color var(--transition-fast), color var(--transition-fast);
+    align-self: flex-start;
+  }
+
+  .filter-clear:hover {
+    border-color: var(--color-text-muted);
+    color: var(--color-text);
+  }
+
+  .filter-results {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-faint);
+  }
+
+  .posts-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-6);
+  }
+
+  @media (min-width: 640px) {
+    .posts-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (min-width: 960px) {
+    .posts-grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  .filter-empty {
+    text-align: center;
+    padding: var(--space-12) var(--space-6);
+    color: var(--color-text-muted);
+    font-size: var(--font-size-base);
+  }
+
+  .filter-empty-reset {
+    background: none;
+    border: none;
+    color: var(--color-accent);
+    font-size: inherit;
+    font-family: inherit;
+    cursor: pointer;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    padding: 0;
+  }
+
+  .filter-empty-reset:hover {
+    color: var(--color-accent-hover);
+  }
+</style>

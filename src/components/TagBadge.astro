@@ -1,0 +1,57 @@
+---
+import { slugifyTag } from '../utils/tags';
+
+interface Props {
+  tag: string;
+  size?: 'sm' | 'md';
+}
+
+const { tag, size = 'sm' } = Astro.props;
+const slug = slugifyTag(tag);
+---
+
+<a href={`/tags/${slug}`} class={`tag-badge tag-badge--${size}`}>
+  {tag}
+</a>
+
+<style>
+  .tag-badge {
+    display: inline-block;
+    background-color: var(--color-bg-subtle);
+    color: var(--color-text-muted);
+    border-radius: var(--radius-full);
+    text-decoration: none;
+    font-weight: 500;
+    white-space: nowrap;
+    line-height: 1.4;
+    transition:
+      background-color var(--transition-fast),
+      color var(--transition-fast),
+      transform var(--transition-fast);
+  }
+
+  .tag-badge:hover {
+    background-color: color-mix(in srgb, var(--color-accent) 15%, transparent);
+    color: var(--color-accent);
+    text-decoration: none;
+    transform: translateY(-1px);
+  }
+
+  .tag-badge:visited {
+    color: var(--color-text-muted);
+  }
+
+  .tag-badge:visited:hover {
+    color: var(--color-accent);
+  }
+
+  .tag-badge--sm {
+    padding: 0.2em 0.6em;
+    font-size: var(--font-size-xs);
+  }
+
+  .tag-badge--md {
+    padding: 0.3em 0.75em;
+    font-size: var(--font-size-sm);
+  }
+</style>

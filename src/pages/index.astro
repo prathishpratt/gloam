@@ -1,0 +1,294 @@
+---
+import PageLayout from '../layouts/PageLayout.astro';
+import PostCard from '../components/PostCard.astro';
+import TagBadge from '../components/TagBadge.astro';
+import SourceBadge from '../components/SourceBadge.astro';
+import { getAllPosts, getFeaturedPosts } from '../utils/posts';
+import { getAllTags } from '../utils/tags';
+
+const allPosts = await getAllPosts();
+const featuredPosts = await getFeaturedPosts();
+const allTags = await getAllTags();
+
+const latestPosts = allPosts.slice(0, 8);
+const topTags = allTags.slice(0, 10);
+---
+
+<PageLayout title="Gloam — Personal Reading Archive" description="A personal reading archive — the best writing from across the web, curated in one place.">
+
+  <!-- Hero -->
+  <section class="hero">
+    <h1 class="hero-title">Gloam</h1>
+    <p class="hero-tagline">A personal reading archive — the best writing from across the web, curated in one place.</p>
+    <div class="hero-actions">
+      <a href="/collection" class="btn btn--primary">Browse Collection</a>
+      <a href="/about" class="btn btn--ghost">About Gloam</a>
+    </div>
+  </section>
+
+  <!-- Latest Additions -->
+  <section class="section">
+    <div class="section-header">
+      <h2 class="section-title">Latest Additions</h2>
+      <a href="/collection" class="section-link">View all →</a>
+    </div>
+    <div class="posts-grid">
+      {latestPosts.map((post) => (
+        <PostCard post={post} />
+      ))}
+    </div>
+  </section>
+
+  <!-- Featured -->
+  {featuredPosts.length > 0 && (
+    <section class="section">
+      <div class="section-header">
+        <h2 class="section-title">Featured</h2>
+      </div>
+      <div class="featured-scroll">
+        {featuredPosts.map((post) => (
+          <article class="featured-card">
+            <a href={`/posts/${post.slug}`} class="featured-card-link" tabindex="-1" aria-hidden="true"></a>
+            <div class="featured-card-top">
+              <SourceBadge source_site={post.data.source_site} link={false} />
+            </div>
+            <h3 class="featured-card-title">
+              <a href={`/posts/${post.slug}`} class="featured-card-title-link">
+                {post.data.title}
+              </a>
+            </h3>
+            {post.data.description && (
+              <p class="featured-card-description">{post.data.description}</p>
+            )}
+          </article>
+        ))}
+      </div>
+    </section>
+  )}
+
+  <!-- Browse by Tag -->
+  {topTags.length > 0 && (
+    <section class="section">
+      <div class="section-header">
+        <h2 class="section-title">Browse by Tag</h2>
+        <a href="/tags" class="section-link">All tags →</a>
+      </div>
+      <div class="tag-cloud">
+        {topTags.map(({ tag }) => (
+          <TagBadge tag={tag} size="md" />
+        ))}
+      </div>
+    </section>
+  )}
+
+</PageLayout>
+
+<style>
+  /* Hero */
+  .hero {
+    text-align: center;
+    padding: var(--space-20) 0 var(--space-16);
+  }
+
+  .hero-title {
+    font-size: clamp(3.5rem, 10vw, 7rem);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1;
+    color: var(--color-text);
+    margin-bottom: var(--space-6);
+  }
+
+  .hero-tagline {
+    font-size: clamp(var(--font-size-base), 2.5vw, var(--font-size-xl));
+    color: var(--color-text-muted);
+    max-width: 560px;
+    margin: 0 auto var(--space-10);
+    line-height: var(--line-height-normal);
+  }
+
+  .hero-actions {
+    display: flex;
+    gap: var(--space-4);
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  /* Buttons */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    padding: var(--space-3) var(--space-6);
+    border-radius: var(--radius-md);
+    font-weight: 600;
+    font-size: var(--font-size-sm);
+    text-decoration: none;
+    transition: background-color var(--transition-fast), transform var(--transition-fast), color var(--transition-fast);
+  }
+
+  .btn--primary {
+    background-color: var(--color-accent);
+    color: white;
+  }
+
+  .btn--primary:hover {
+    background-color: var(--color-accent-hover);
+    color: white;
+    text-decoration: none;
+    transform: translateY(-1px);
+  }
+
+  .btn--ghost {
+    background-color: transparent;
+    color: var(--color-text-muted);
+    border: 1px solid var(--color-border);
+  }
+
+  .btn--ghost:hover {
+    border-color: var(--color-text-muted);
+    color: var(--color-text);
+    text-decoration: none;
+  }
+
+  /* Sections */
+  .section {
+    padding: var(--space-16) 0;
+    border-top: 1px solid var(--color-border);
+  }
+
+  .section-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--space-4);
+    margin-bottom: var(--space-8);
+  }
+
+  .section-title {
+    font-size: var(--font-size-2xl);
+    font-weight: 700;
+    color: var(--color-text);
+  }
+
+  .section-link {
+    font-size: var(--font-size-sm);
+    color: var(--color-accent);
+    text-decoration: none;
+    font-weight: 500;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .section-link:hover {
+    color: var(--color-accent-hover);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  /* Posts grid */
+  .posts-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-6);
+  }
+
+  @media (min-width: 640px) {
+    .posts-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  /* Featured horizontal scroll */
+  .featured-scroll {
+    display: flex;
+    gap: var(--space-5);
+    overflow-x: auto;
+    padding-bottom: var(--space-4);
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .featured-scroll::-webkit-scrollbar {
+    height: 4px;
+  }
+
+  .featured-scroll::-webkit-scrollbar-track {
+    background: var(--color-bg-subtle);
+    border-radius: var(--radius-full);
+  }
+
+  .featured-scroll::-webkit-scrollbar-thumb {
+    background: var(--color-border);
+    border-radius: var(--radius-full);
+  }
+
+  .featured-card {
+    position: relative;
+    flex: 0 0 280px;
+    scroll-snap-align: start;
+    background-color: var(--color-bg-elevated);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: var(--space-5);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    transition: transform var(--transition-base), box-shadow var(--transition-base), border-color var(--transition-base);
+  }
+
+  .featured-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+    border-color: color-mix(in srgb, var(--color-accent) 40%, var(--color-border));
+  }
+
+  .featured-card-link {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    border-radius: var(--radius-lg);
+  }
+
+  .featured-card-top {
+    position: relative;
+    z-index: 1;
+  }
+
+  .featured-card-title {
+    font-size: var(--font-size-base);
+    font-weight: 600;
+    line-height: var(--line-height-tight);
+    margin: 0;
+    position: relative;
+    z-index: 1;
+  }
+
+  .featured-card-title-link {
+    color: var(--color-text);
+    text-decoration: none;
+  }
+
+  .featured-card:hover .featured-card-title-link {
+    color: var(--color-accent);
+  }
+
+  .featured-card-description {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+    line-height: var(--line-height-normal);
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    margin: 0;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Tag cloud */
+  .tag-cloud {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+  }
+</style>

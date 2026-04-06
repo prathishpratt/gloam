@@ -1,0 +1,28 @@
+---
+import Base from './Base.astro';
+import Nav from '../components/Nav.astro';
+import Footer from '../components/Footer.astro';
+
+interface Props {
+  title: string;
+  description?: string;
+}
+
+const { title, description } = Astro.props;
+---
+
+<Base title={title} description={description}>
+  <Nav />
+  <main id="main-content" class="container page-main">
+    <slot />
+  </main>
+  <Footer />
+</Base>
+
+<style>
+  .page-main {
+    padding-top: var(--space-12);
+    padding-bottom: var(--space-24);
+    min-height: calc(100vh - var(--nav-height) - 6rem);
+  }
+</style>

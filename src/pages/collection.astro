@@ -1,0 +1,44 @@
+---
+import PageLayout from '../layouts/PageLayout.astro';
+import CollectionFilter from '../components/CollectionFilter.astro';
+import { getAllPosts } from '../utils/posts';
+import { getAllTags } from '../utils/tags';
+
+const allPosts = await getAllPosts();
+const allTags = await getAllTags();
+
+// Derive unique sources from posts
+const sources = [...new Set(allPosts.map((p) => p.data.source_site))].sort();
+---
+
+<PageLayout title="Collection — Gloam" description="Browse the full Gloam reading archive.">
+
+  <div class="collection-header">
+    <h1 class="collection-title">Collection</h1>
+    <p class="collection-count">
+      {allPosts.length} {allPosts.length === 1 ? 'post' : 'posts'} saved
+    </p>
+  </div>
+
+  <CollectionFilter tags={allTags} sources={sources} posts={allPosts} />
+
+</PageLayout>
+
+<style>
+  .collection-header {
+    margin-bottom: var(--space-10);
+  }
+
+  .collection-title {
+    font-size: var(--font-size-4xl);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: var(--color-text);
+    margin-bottom: var(--space-2);
+  }
+
+  .collection-count {
+    font-size: var(--font-size-base);
+    color: var(--color-text-faint);
+  }
+</style>

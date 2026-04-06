@@ -1,0 +1,84 @@
+---
+interface Props {
+  source_site: string;
+  link?: boolean;
+}
+
+const { source_site, link = false } = Astro.props;
+
+// Map source_site values to CSS variable names
+type BadgeKey = 'substack' | 'medium' | 'personal' | 'wordpress' | 'course' | 'other';
+
+const sourceMap: Record<string, BadgeKey> = {
+  'Substack': 'substack',
+  'Medium': 'medium',
+  'Personal Blog': 'personal',
+  'WordPress': 'wordpress',
+  'Course Page': 'course',
+};
+
+const key: BadgeKey = sourceMap[source_site] ?? 'other';
+
+const collectionHref = `/collection?source=${encodeURIComponent(source_site)}`;
+---
+
+{link ? (
+  <a href={collectionHref} class={`source-badge source-badge--${key}`} data-source-key={key}>
+    {source_site}
+  </a>
+) : (
+  <span class={`source-badge source-badge--${key}`} data-source-key={key}>
+    {source_site}
+  </span>
+)}
+
+<style>
+  .source-badge {
+    display: inline-block;
+    padding: 0.2em 0.65em;
+    border-radius: var(--radius-full);
+    font-size: var(--font-size-xs);
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    text-decoration: none;
+    white-space: nowrap;
+    line-height: 1.5;
+    transition: opacity var(--transition-fast), transform var(--transition-fast);
+  }
+
+  a.source-badge:hover {
+    opacity: 0.85;
+    text-decoration: none;
+    transform: translateY(-1px);
+  }
+
+  .source-badge--substack {
+    color: var(--color-badge-substack);
+    background-color: var(--color-badge-substack-bg);
+  }
+
+  .source-badge--medium {
+    color: var(--color-badge-medium);
+    background-color: var(--color-badge-medium-bg);
+  }
+
+  .source-badge--personal {
+    color: var(--color-badge-personal);
+    background-color: var(--color-badge-personal-bg);
+  }
+
+  .source-badge--wordpress {
+    color: var(--color-badge-wordpress);
+    background-color: var(--color-badge-wordpress-bg);
+  }
+
+  .source-badge--course {
+    color: var(--color-badge-course);
+    background-color: var(--color-badge-course-bg);
+  }
+
+  .source-badge--other {
+    color: var(--color-badge-other);
+    background-color: var(--color-badge-other-bg);
+  }
+</style>
