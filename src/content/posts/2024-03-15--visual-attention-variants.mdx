@@ -1,6 +1,6 @@
 ---
 title: "Visual Attention Variants in Modern LLMs"
-description: "A comprehensive visual guide to attention mechanism variants: MHA, GQA, MLA, and sliding window attention, with intuitive diagrams showing how they differ."
+description: "A comprehensive visual guide to attention mechanism variants: MHA, GQA, MLA, and sliding window attention."
 source_url: "https://magazine.sebastianraschka.com/p/visual-attention-variants"
 source_site: "Substack"
 original_author: "Sebastian Raschka"
@@ -11,75 +11,4 @@ featured: true
 draft: false
 ---
 
-## Introduction
-
-Attention mechanisms are at the heart of modern large language models. Since the original transformer paper introduced Multi-Head Attention (MHA), researchers have proposed numerous variants to improve efficiency, reduce memory usage, and scale to longer contexts.
-
-In this post, we explore the most important attention variants used in production LLMs today:
-
-- **Multi-Head Attention (MHA)** — the original
-- **Grouped-Query Attention (GQA)** — fewer KV heads
-- **Multi-Head Latent Attention (MLA)** — used in DeepSeek
-- **Sliding Window Attention** — for long contexts
-
-## Multi-Head Attention (MHA)
-
-The original transformer attention computes separate Q, K, V projections for each attention head. For a model with `h` heads and hidden dimension `d`:
-
-```python
-import torch
-import torch.nn as nn
-
-class MultiHeadAttention(nn.Module):
-    def __init__(self, d_model: int, num_heads: int):
-        super().__init__()
-        self.num_heads = num_heads
-        self.head_dim = d_model // num_heads
-        
-        self.W_q = nn.Linear(d_model, d_model)
-        self.W_k = nn.Linear(d_model, d_model)
-        self.W_v = nn.Linear(d_model, d_model)
-        self.W_o = nn.Linear(d_model, d_model)
-```
-
-Each head attends to the full sequence, giving maximum expressiveness — but also requiring the most memory for the KV cache.
-
-## Grouped-Query Attention (GQA)
-
-GQA reduces memory by sharing K and V projections across groups of Q heads. If you have 32 query heads and 8 KV heads, each KV head is shared by 4 query heads.
-
-This is used in Llama 2 70B, Mistral 7B, and many modern open models.
-
-```python
-class GroupedQueryAttention(nn.Module):
-    def __init__(self, d_model: int, num_q_heads: int, num_kv_heads: int):
-        super().__init__()
-        assert num_q_heads % num_kv_heads == 0
-        self.groups = num_q_heads // num_kv_heads
-        
-        self.W_q = nn.Linear(d_model, d_model)
-        self.W_k = nn.Linear(d_model, d_model // self.groups)
-        self.W_v = nn.Linear(d_model, d_model // self.groups)
-```
-
-## Why This Matters
-
-The KV cache is one of the biggest bottlenecks in LLM inference at scale. With GQA:
-
-- Memory for KV cache reduced by `num_groups` factor
-- Inference speed significantly improved
-- Quality nearly identical to MHA (empirically)
-
-## Conclusion
-
-Understanding attention variants helps you:
-
-1. Choose the right model architecture for your use case
-2. Optimize inference for production deployments
-3. Understand the trade-offs between quality and efficiency
-
-The field is evolving rapidly — new attention variants continue to emerge as models scale to longer contexts and larger parameter counts.
-
----
-
-*Originally published on [Sebastian Raschka's Substack](https://magazine.sebastianraschka.com/p/visual-attention-variants).*
+> Originally published by **Sebastian Raschka** on [Substack](https://magazine.sebastianraschka.com/p/visual-attention-variants).

@@ -1,21 +1,23 @@
 ---
-import { getCollection, render } from 'astro:content';
-import PostLayout from '../../layouts/PostLayout.astro';
-import { readingTime } from '../../utils/reading-time';
+import { getCollection } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import Nav from '../../components/Nav.astro';
+import Footer from '../../components/Footer.astro';
+import SourceBadge from '../../components/SourceBadge.astro';
+import TagBadge from '../../components/TagBadge.astro';
+import { formatDate } from '../../utils/posts';
+import fs from 'node:fs';
+import path from 'node:path';
 
 export async function getStaticPaths() {
   const posts = await getCollection('posts', ({ data }) => !data.draft);
   return posts.map((post) => ({
-    params: { slug: post.slug },
+    params: { slug: post.id },
     props: { post },
   }));
 }
 
 const { post } = Astro.props;
-const { Content, headings } = await render(post);
-
-const reading_time = readingTime(post.body ?? '');
-
 const {
   title,
   description,
@@ -25,22 +27,237 @@ const {
   date_saved,
   date_published,
   tags,
-  cover_image,
 } = post.data;
+
+// Check if a monolith snapshot exists for this post
+const snapshotPath = path.join(process.cwd(), 'public', 'saved', `${post.id}.html`);
+const hasSnapshot = fs.existsSync(snapshotPath);
+const iframeSrc = `/saved/${post.id}.html`;
 ---
 
-<PostLayout
-  title={title}
-  description={description}
-  source_url={source_url}
-  source_site={source_site}
-  original_author={original_author}
-  date_saved={date_saved}
-  date_published={date_published}
-  tags={tags}
-  cover_image={cover_image}
-  headings={headings}
-  reading_time={reading_time}
->
-  <Content />
-</PostLayout>
+<Base title={title} description={description} canonicalUrl={source_url}>
+  <Nav />
+
+  <!-- Attribution bar -->
+  <div class="attribution-bar">
+    <div class="attribution-inner">
+      <div class="attribution-left">
+        <span class="attr-label">Saved from</span>
+        <SourceBadge source_site={source_site} />
+        <span class="attr-author">by <strong>{original_author}</strong></span>
+        {date_published && (
+          <span class="attr-date">· {formatDate(date_published)}</span>
+        )}
+      </div>
+      <div class="attribution-right">
+        <div class="attr-tags">
+          {tags.slice(0, 3).map((tag) => <TagBadge tag={tag} size="sm" />)}
+        </div>
+        <a
+          href={source_url}
+          target="_blank"
+          rel="noopener noreferrer"
+          class="view-original-btn"
+        >
+          View Original ↗
+        </a>
+      </div>
+    </div>
+  </div>
+
+  {hasSnapshot ? (
+    <!-- Render the exact saved HTML in an iframe -->
+    <div class="iframe-wrapper" id="frame-wrapper">
+      <iframe
+        id="post-frame"
+        src={iframeSrc}
+        title={title}
+        scrolling="yes"
+        frameborder="0"
+        loading="lazy"
+      ></iframe>
+    </div>
+
+    <script>
+      // Auto-resize iframe to its content height (works because same-origin)
+      const iframe = document.getElementById('post-frame') as HTMLIFrameElement;
+      function resizeIframe() {
+        try {
+          const h = iframe.contentWindow?.document.body.scrollHeight;
+          if (h && h > 200) {
+            iframe.style.height = h + 'px';
+          }
+        } catch (_) {}
+      }
+      iframe.addEventListener('load', () => {
+        resizeIframe();
+        // Re-check after images load
+        setTimeout(resizeIframe, 1000);
+        setTimeout(resizeIframe, 3000);
+      });
+    </script>
+  ) : (
+    <!-- Fallback: no snapshot saved yet -->
+    <div class="no-snapshot">
+      <div class="no-snapshot-inner">
+        <p class="no-snapshot-title">No local snapshot found</p>
+        <p class="no-snapshot-text">
+          Run the cloner script to save a local copy of this post:
+        </p>
+        <pre class="no-snapshot-code">python cloner/cloner.py "{source_url}"</pre>
+        <a
+          href={source_url}
+          target="_blank"
+          rel="noopener noreferrer"
+          class="view-original-btn large"
+        >
+          Read on {source_site} ↗
+        </a>
+      </div>
+    </div>
+  )}
+
+  <Footer />
+</Base>
+
+<style>
+  /* ── Attribution bar ── */
+  .attribution-bar {
+    background: var(--color-bg-elevated);
+    border-bottom: 1px solid var(--color-border);
+    padding: var(--space-3) 0;
+    position: sticky;
+    top: var(--nav-height);
+    z-index: 50;
+  }
+
+  .attribution-inner {
+    max-width: var(--max-width-site);
+    margin-inline: auto;
+    padding-inline: var(--space-6);
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+    flex-wrap: wrap;
+    justify-content: space-between;
+  }
+
+  .attribution-left {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    flex-wrap: wrap;
+  }
+
+  .attribution-right {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    flex-wrap: wrap;
+  }
+
+  .attr-tags {
+    display: flex;
+    gap: var(--space-1);
+    flex-wrap: wrap;
+  }
+
+  .attr-label {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+  }
+
+  .attr-author {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+  }
+
+  .attr-date {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-faint);
+  }
+
+  /* ── View Original button ── */
+  .view-original-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+    padding: var(--space-1) var(--space-3);
+    background: var(--color-accent);
+    color: white;
+    text-decoration: none;
+    font-size: var(--font-size-sm);
+    font-weight: 500;
+    border-radius: var(--radius-full);
+    transition: background var(--transition-fast), transform var(--transition-fast);
+    white-space: nowrap;
+  }
+
+  .view-original-btn:hover {
+    background: var(--color-accent-hover);
+    color: white;
+    transform: translateY(-1px);
+    text-decoration: none;
+  }
+
+  .view-original-btn:visited {
+    color: white;
+  }
+
+  .view-original-btn.large {
+    font-size: var(--font-size-base);
+    padding: var(--space-3) var(--space-6);
+  }
+
+  /* ── Iframe ── */
+  .iframe-wrapper {
+    width: 100%;
+    background: white; /* iframes always have white bg on original sites */
+  }
+
+  #post-frame {
+    width: 100%;
+    min-height: 100vh;
+    border: none;
+    display: block;
+  }
+
+  /* ── No snapshot fallback ── */
+  .no-snapshot {
+    min-height: 60vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-16);
+  }
+
+  .no-snapshot-inner {
+    text-align: center;
+    max-width: 480px;
+  }
+
+  .no-snapshot-title {
+    font-size: var(--font-size-xl);
+    font-weight: 600;
+    color: var(--color-text);
+    margin-bottom: var(--space-3);
+  }
+
+  .no-snapshot-text {
+    color: var(--color-text-muted);
+    margin-bottom: var(--space-4);
+  }
+
+  .no-snapshot-code {
+    background: var(--color-bg-elevated);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: var(--space-3) var(--space-4);
+    font-family: var(--font-mono);
+    font-size: var(--font-size-sm);
+    text-align: left;
+    margin-bottom: var(--space-6);
+    word-break: break-all;
+    white-space: pre-wrap;
+  }
+</style>
